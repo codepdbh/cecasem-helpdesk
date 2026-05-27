@@ -1,0 +1,268 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPERADMIN
+  USER
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  DISABLED
+}
+
+enum TicketStatus {
+  ABIERTO
+  EN_PROCESO
+  ESPERANDO_USUARIO
+  RESUELTO
+  CERRADO
+  REABIERTO
+  CANCELADO
+}
+
+enum TicketPriority {
+  BAJA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+model User {
+  id                   String                 @id @default(uuid()) @db.Uuid
+  firstName            String
+  lastName             String
+  fullName             String
+  username             String                 @unique
+  email                String?                @unique
+  phone                String?
+  area                 String?
+  position             String?
+  profilePhotoPath     String?
+  passwordHash         String
+  role                 UserRole               @default(USER)
+  status               UserStatus             @default(PENDING)
+  isActive             Boolean                @default(false)
+  mustChangePassword   Boolean                @default(false)
+  firstAccessIp        String?
+  firstAccessUserAgent String?
+  firstAccessAt        DateTime?
+  lastLoginAt          DateTime?
+  lastLoginIp          String?
+  lastLoginUserAgent   String?
+  approvedById         String?                @db.Uuid
+  approvedAt           DateTime?
+  rejectedById         String?                @db.Uuid
+  rejectedAt           DateTime?
+  rejectionReason      String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  approvedBy           User?                  @relation("UserApprovals", fields: [approvedById], references: [id])
+  approvedUsers        User[]                 @relation("UserApprovals")
+  rejectedBy           User?                  @relation("UserRejections", fields: [rejectedById], references: [id])
+  rejectedUsers        User[]                 @relation("UserRejections")
+  deviceLogs           UserDeviceLog[]
+  accessLogs           AccessLog[]
+  createdTickets       Ticket[]               @relation("TicketCreator")
+  assignedTickets      Ticket[]               @relation("TicketAssignee")
+  closedTickets        Ticket[]               @relation("TicketCloser")
+  resolvedTickets      Ticket[]               @relation("TicketResolver")
+  reopenedTickets      Ticket[]               @relation("TicketReopener")
+  comments             TicketComment[]
+  attachments          TicketAttachment[]
+  constancyPhotos      TicketConstancyPhoto[]
+  ticketLogs           TicketLog[]
+  notifications        Notification[]
+
+  @@index([status])
+  @@index([role])
+}
+
+model UserDeviceLog {
+  id                     String   @id @default(uuid()) @db.Uuid
+  userId                 String?  @db.Uuid
+  firstName              String?
+  lastName               String?
+  profilePhotoPath       String?
+  usernameAttempt        String?
+  ipAddress              String
+  userAgent              String
+  action                 String
+  isDifferentFromFirstIp Boolean  @default(false)
+  success                Boolean  @default(true)
+  message                String?
+  createdAt              DateTime @default(now())
+  user                   User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([ipAddress])
+}
+
+model Ticket {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  code                  String                 @unique
+  title                 String
+  description           String
+  reason                String
+  purpose               String
+  priority              TicketPriority
+  priorityJustification String
+  status                TicketStatus           @default(ABIERTO)
+  categoryId            String                 @db.Uuid
+  createdById           String                 @db.Uuid
+  assignedToId          String?                @db.Uuid
+  createdFromIp         String
+  createdUserAgent      String
+  closedById            String?                @db.Uuid
+  closedAt              DateTime?
+  closeComment          String?
+  resolvedAt            DateTime?
+  resolvedById          String?                @db.Uuid
+  reopenedAt            DateTime?
+  reopenedById          String?                @db.Uuid
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  category              Category               @relation(fields: [categoryId], references: [id])
+  createdBy             User                   @relation("TicketCreator", fields: [createdById], references: [id])
+  assignedTo            User?                  @relation("TicketAssignee", fields: [assignedToId], references: [id])
+  closedBy              User?                  @relation("TicketCloser", fields: [closedById], references: [id])
+  resolvedBy            User?                  @relation("TicketResolver", fields: [resolvedById], references: [id])
+  reopenedBy            User?                  @relation("TicketReopener", fields: [reopenedById], references: [id])
+  comments              TicketComment[]
+  attachments           TicketAttachment[]
+  constancyPhotos       TicketConstancyPhoto[]
+  logs                  TicketLog[]
+  notifications         Notification[]
+
+  @@index([status, createdAt])
+  @@index([priority])
+  @@index([createdById])
+  @@index([assignedToId])
+}
+
+model TicketSequence {
+  year      Int      @id
+  lastValue Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+model TicketComment {
+  id               String   @id @default(uuid()) @db.Uuid
+  ticketId         String   @db.Uuid
+  userId           String   @db.Uuid
+  comment          String
+  createdFromIp    String
+  createdUserAgent String
+  createdAt        DateTime @default(now())
+  ticket           Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user             User     @relation(fields: [userId], references: [id])
+
+  @@index([ticketId, createdAt])
+}
+
+model TicketAttachment {
+  id                String   @id @default(uuid()) @db.Uuid
+  ticketId          String   @db.Uuid
+  uploadedById      String   @db.Uuid
+  originalName      String
+  storedName        String
+  filePath          String
+  mimeType          String
+  sizeBytes         Int
+  uploadedFromIp    String
+  uploadedUserAgent String
+  createdAt         DateTime @default(now())
+  ticket            Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  uploadedBy        User     @relation(fields: [uploadedById], references: [id])
+
+  @@index([ticketId])
+}
+
+model TicketConstancyPhoto {
+  id                String   @id @default(uuid()) @db.Uuid
+  ticketId          String   @db.Uuid
+  uploadedById      String   @db.Uuid
+  originalName      String
+  storedName        String
+  filePath          String
+  mimeType          String
+  sizeBytes         Int
+  description       String?
+  uploadedFromIp    String
+  uploadedUserAgent String
+  createdAt         DateTime @default(now())
+  ticket            Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  uploadedBy        User     @relation(fields: [uploadedById], references: [id])
+
+  @@index([ticketId])
+}
+
+model TicketLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  ticketId      String   @db.Uuid
+  userId        String?  @db.Uuid
+  action        String
+  previousValue String?
+  newValue      String?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+  ticket        Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([ticketId, createdAt])
+}
+
+model AccessLog {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String?  @db.Uuid
+  usernameAttempt String?
+  action          String
+  ipAddress       String
+  userAgent       String
+  success         Boolean
+  message         String?
+  createdAt       DateTime @default(now())
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
+
+model Category {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tickets     Ticket[]
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  ticketId  String?  @db.Uuid
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ticket    Ticket?  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

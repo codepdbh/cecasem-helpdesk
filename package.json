@@ -1,0 +1,24 @@
+{
+  "name": "cecasem-helpdesk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mesa de Ayuda CECASEM - monorepo local",
+  "workspaces": ["backend", "frontend", "desktop", "mobile"],
+  "scripts": {
+    "setup:local": "powershell -ExecutionPolicy Bypass -File ./scripts/windows/setup-local.ps1",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:prepare": "npm run prisma:generate --workspace backend && npm run prisma:deploy --workspace backend && npm run prisma:seed --workspace backend",
+    "dev:api": "npm run start:dev --workspace backend",
+    "dev:web": "npm run dev --workspace frontend",
+    "dev": "concurrently --kill-others --names API,WEB --prefix-colors blue,green \"npm run dev:api\" \"npm run dev:web\"",
+    "start:api": "npm run start --workspace backend",
+    "preview:web": "npm run preview --workspace frontend",
+    "build:web": "npm run build --workspace frontend",
+    "build:api": "npm run build --workspace backend",
+    "build:prod": "npm run build:api && npm run build:web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

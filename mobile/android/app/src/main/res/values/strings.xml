@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mesa de Ayuda CECASEM</string>
+    <string name="title_activity_main">Mesa de Ayuda CECASEM</string>
+    <string name="package_name">bo.org.cecasem.mesadeayuda</string>
+    <string name="custom_url_scheme">bo.org.cecasem.mesadeayuda</string>
+</resources>

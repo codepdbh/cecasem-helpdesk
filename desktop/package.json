@@ -1,0 +1,17 @@
+{
+  "name": "cecasem-helpdesk-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "tauri": "tauri",
+    "icon": "tauri icon ../frontend/logo.png --output ./src-tauri/icons",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.2"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.0"
+  }
+}

@@ -1,0 +1,17 @@
+[package]
+name = "cecasem_helpdesk"
+version = "1.0.0"
+description = "Mesa de Ayuda CECASEM"
+authors = ["CECASEM"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+serde_json = "1"
+serde = { version = "1", features = ["derive"] }
+tauri = { version = "2", features = [] }
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]

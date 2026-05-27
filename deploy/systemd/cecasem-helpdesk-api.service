@@ -1,0 +1,16 @@
+[Unit]
+Description=Mesa de Ayuda CECASEM API
+After=network.target docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/cecasem-helpdesk/backend
+EnvironmentFile=/opt/cecasem-helpdesk/backend/.env
+ExecStart=/usr/bin/node dist/main.js
+Restart=always
+RestartSec=5
+User=cecasem
+Group=cecasem
+
+[Install]
+WantedBy=multi-user.target

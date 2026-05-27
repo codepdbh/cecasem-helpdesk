@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-800 antialiased;
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+  }
+  input, textarea, select {
+    @apply outline-none;
+  }
+}
+
+@layer components {
+  .field {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm transition focus:border-cecasem-blue focus:ring-2 focus:ring-cecasem-blue/15;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-slate-700;
+  }
+  .panel {
+    @apply rounded-2xl border border-slate-100 bg-white p-5 shadow-panel;
+  }
+}
+

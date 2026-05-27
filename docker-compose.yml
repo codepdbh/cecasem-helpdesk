@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cecasem_helpdesk_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cecasem_tickets
+      POSTGRES_USER: cecasem_ticket_user
+      POSTGRES_PASSWORD: ${CECASEM_DB_PASSWORD:-CAMBIAR_PASSWORD}
+    ports:
+      - "127.0.0.1:55433:5432"
+    volumes:
+      - cecasem_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cecasem_ticket_user -d cecasem_tickets"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  cecasem_postgres_data:
