@@ -1,5 +1,9 @@
 import { UserRole, UserStatus } from '@prisma/client';
+import { Transform } from 'class-transformer';
 import { IsEmail, IsEnum, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+
+const emptyToUndefined = ({ value }: { value: unknown }) =>
+  typeof value === 'string' && value.trim() === '' ? undefined : value;
 
 export class CreateUserDto {
   @IsString()
@@ -19,6 +23,7 @@ export class CreateUserDto {
   password!: string;
 
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsEmail()
   email?: string;
 
@@ -44,4 +49,3 @@ export class CreateUserDto {
   @IsEnum(UserStatus)
   status: UserStatus = UserStatus.ACTIVE;
 }
-

@@ -8,7 +8,7 @@ export function NewTicketPage() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState({
-    title: '', categoryId: '', priority: 'MEDIA', priorityJustification: '', reason: '', purpose: '', description: '',
+    title: '', categoryId: '', priority: 'MEDIA', priorityJustification: '', description: '',
   });
   const [attachment, setAttachment] = useState<File>();
   const [error, setError] = useState('');
@@ -55,8 +55,6 @@ export function NewTicketPage() {
           </Field>
         </div>
         <Field label="Justificación de prioridad" required><Textarea value={form.priorityJustification} onChange={(event) => update('priorityJustification', event.target.value)} required /></Field>
-        <Field label="¿Por qué se solicita este ticket?" required><Textarea value={form.reason} onChange={(event) => update('reason', event.target.value)} required /></Field>
-        <Field label="¿Para qué propósito se necesita?" required><Textarea value={form.purpose} onChange={(event) => update('purpose', event.target.value)} required /></Field>
         <Field label="Descripción detallada" required><Textarea value={form.description} onChange={(event) => update('description', event.target.value)} required className="min-h-32" /></Field>
         <Field label="Archivo adjunto opcional (imagen, PDF u Office, máx. 10 MB)">
           <Input type="file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onChange={(event) => setAttachment(event.target.files?.[0])} />

@@ -1,4 +1,8 @@
+import { Transform } from 'class-transformer';
 import { IsEmail, IsOptional, IsString, MaxLength } from 'class-validator';
+
+const emptyToUndefined = ({ value }: { value: unknown }) =>
+  typeof value === 'string' && value.trim() === '' ? undefined : value;
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -17,7 +21,7 @@ export class UpdateProfileDto {
   phone?: string;
 
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsEmail()
   email?: string;
 }
-

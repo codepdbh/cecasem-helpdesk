@@ -196,8 +196,6 @@ export function TicketDetailPage() {
             )}
             <div className="mt-5">
               <Detail label="Justificación de prioridad" text={ticket.priorityJustification} />
-              <Detail label="¿Por qué se solicita?" text={ticket.reason} />
-              <Detail label="¿Para qué propósito se necesita?" text={ticket.purpose} />
               <Detail label="Descripción detallada" text={ticket.description} />
               {ticket.closeComment && <Detail label="Comentario de cierre" text={ticket.closeComment} />}
             </div>

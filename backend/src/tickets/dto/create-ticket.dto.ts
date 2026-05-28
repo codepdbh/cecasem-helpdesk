@@ -1,5 +1,9 @@
 import { TicketPriority } from '@prisma/client';
-import { IsEnum, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsEnum, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+
+const emptyToUndefined = ({ value }: { value: unknown }) =>
+  typeof value === 'string' && value.trim() === '' ? undefined : value;
 
 export class CreateTicketDto {
   @IsString()
@@ -17,16 +21,17 @@ export class CreateTicketDto {
   @MinLength(4)
   priorityJustification!: string;
 
+  @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
-  @MinLength(4)
-  reason!: string;
+  reason?: string;
 
+  @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
-  @MinLength(4)
-  purpose!: string;
+  purpose?: string;
 
   @IsString()
   @MinLength(8)
   description!: string;
 }
-

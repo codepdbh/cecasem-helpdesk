@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { Alert, Button, Field, Input } from '../../components/ui';
+import { Alert, Button, Field, Input, PasswordInput } from '../../components/ui';
 import { api, dataOf, errorMessage } from '../../lib/api';
 import { AuthShell } from './LoginPage';
 
@@ -10,6 +10,8 @@ interface RegistrationResult {
   requiresApproval: boolean;
   message: string;
 }
+
+const maxProfilePhotoBytes = 3 * 1024 * 1024;
 
 export function FirstAccessPage() {
   const [form, setForm] = useState({
@@ -30,6 +32,19 @@ export function FirstAccessPage() {
   }, [preview]);
 
   const update = (name: string, value: string) => setForm((current) => ({ ...current, [name]: value }));
+  const selectPhoto = (file?: File) => {
+    setError('');
+    if (!file) {
+      setPhoto(undefined);
+      return;
+    }
+    if (file.size > maxProfilePhotoBytes) {
+      setPhoto(undefined);
+      setError('La foto de perfil debe pesar máximo 3 MB.');
+      return;
+    }
+    setPhoto(file);
+  };
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     setError('');
@@ -43,7 +58,10 @@ export function FirstAccessPage() {
     }
     setLoading(true);
     const payload = new FormData();
-    Object.entries(form).forEach(([key, value]) => payload.append(key, value));
+    Object.entries(form).forEach(([key, value]) => {
+      if (['area', 'position', 'phone', 'email'].includes(key) && !value.trim()) return;
+      payload.append(key, value);
+    });
     payload.append('photo', photo);
     try {
       setResult(dataOf<RegistrationResult>(await api.post('/auth/first-access', payload)));
@@ -74,12 +92,12 @@ export function FirstAccessPage() {
             <Field label="Apellido" required><Input value={form.lastName} onChange={(event) => update('lastName', event.target.value)} required /></Field>
           </div>
           <Field label="Foto de perfil (JPG, PNG o WEBP, máx. 3 MB)" required>
-            <Input type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(event) => setPhoto(event.target.files?.[0])} required />
+            <Input type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(event) => selectPhoto(event.target.files?.[0])} required />
           </Field>
           {preview && <img src={preview} alt="Vista previa" className="h-20 w-20 rounded-full object-cover" />}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Contraseña" required><Input type="password" value={form.password} onChange={(event) => update('password', event.target.value)} required /></Field>
-            <Field label="Confirmar" required><Input type="password" value={form.confirmPassword} onChange={(event) => update('confirmPassword', event.target.value)} required /></Field>
+            <Field label="Contraseña" required><PasswordInput value={form.password} onChange={(event) => update('password', event.target.value)} autoComplete="new-password" required /></Field>
+            <Field label="Confirmar" required><PasswordInput value={form.confirmPassword} onChange={(event) => update('confirmPassword', event.target.value)} autoComplete="new-password" required /></Field>
           </div>
           <Field label="Área o dependencia"><Input value={form.area} onChange={(event) => update('area', event.target.value)} /></Field>
           <Field label="Cargo"><Input value={form.position} onChange={(event) => update('position', event.target.value)} /></Field>
@@ -93,4 +111,3 @@ export function FirstAccessPage() {
     </AuthShell>
   );
 }
-

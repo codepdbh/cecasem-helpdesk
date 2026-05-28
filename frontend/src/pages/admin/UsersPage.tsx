@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Alert, Avatar, Badge, Button, Empty, Field, Input, PageTitle, Select, formatDate } from '../../components/ui';
+import { Alert, Avatar, Badge, Button, Empty, Field, Input, PageTitle, PasswordInput, Select, formatDate } from '../../components/ui';
 import { api, dataOf, errorMessage } from '../../lib/api';
 import { liveConnection } from '../../lib/live';
 import type { Paged, User } from '../../types';
@@ -79,7 +79,7 @@ export function UsersPage() {
         <form className="panel mb-6 grid gap-4 md:grid-cols-5" onSubmit={create}>
           <Field label="Nombre" required><Input required value={newUser.firstName} onChange={(event) => setNewUser({ ...newUser, firstName: event.target.value })} /></Field>
           <Field label="Apellido" required><Input required value={newUser.lastName} onChange={(event) => setNewUser({ ...newUser, lastName: event.target.value })} /></Field>
-          <Field label="Contraseña temporal" required><Input required type="password" value={newUser.password} onChange={(event) => setNewUser({ ...newUser, password: event.target.value })} /></Field>
+          <Field label="Contraseña temporal" required><PasswordInput required value={newUser.password} onChange={(event) => setNewUser({ ...newUser, password: event.target.value })} autoComplete="new-password" /></Field>
           <Field label="Rol"><Select value={newUser.role} onChange={(event) => setNewUser({ ...newUser, role: event.target.value })}><option value="USER">Usuario</option><option value="SUPERADMIN">Equipo de Sistemas</option></Select></Field>
           <div className="flex items-end"><Button className="w-full">Registrar</Button></div>
         </form>

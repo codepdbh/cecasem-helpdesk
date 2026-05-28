@@ -1,4 +1,5 @@
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import { useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { fileUrl } from '../lib/api';
 import type { Priority, Role, TicketStatus, UserStatus } from '../types';
 
@@ -26,6 +27,33 @@ export function Button({
 
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={`field ${props.className || ''}`} {...props} />;
+}
+
+export function PasswordInput({ className = '', disabled, ...props }: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'>) {
+  const [visible, setVisible] = useState(false);
+  const Icon = visible ? EyeOff : Eye;
+  return (
+    <div className="relative">
+      <input
+        className={`field pr-11 ${className}`}
+        disabled={disabled}
+        type={visible ? 'text' : 'password'}
+        {...props}
+      />
+      <button
+        aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+        aria-pressed={visible}
+        className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-cecasem-blue focus:outline-none focus:ring-2 focus:ring-cecasem-blue/20 disabled:cursor-not-allowed disabled:opacity-40"
+        disabled={disabled}
+        onClick={() => setVisible((current) => !current)}
+        onMouseDown={(event) => event.preventDefault()}
+        title={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+        type="button"
+      >
+        <Icon className="h-4 w-4" aria-hidden="true" />
+      </button>
+    </div>
+  );
 }
 
 export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
@@ -131,4 +159,3 @@ export function Empty({ text }: { text: string }) {
 export function formatDate(value?: string): string {
   return value ? new Date(value).toLocaleString('es-BO') : 'Sin registro';
 }
-

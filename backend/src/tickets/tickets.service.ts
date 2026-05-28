@@ -109,6 +109,7 @@ export class TicketsService {
     const category = await this.prisma.category.findFirst({ where: { id: dto.categoryId, isActive: true } });
     if (!category) throw new NotFoundException('Categoria no disponible.');
     const metadata = requestMetadata(request);
+    const description = dto.description.trim();
     const ticket = await this.prisma.ticket.create({
       data: {
         code: await this.ticketCode(),
@@ -116,9 +117,9 @@ export class TicketsService {
         categoryId: dto.categoryId,
         priority: dto.priority,
         priorityJustification: dto.priorityJustification.trim(),
-        reason: dto.reason.trim(),
-        purpose: dto.purpose.trim(),
-        description: dto.description.trim(),
+        reason: dto.reason?.trim() || description,
+        purpose: dto.purpose?.trim() || description,
+        description,
         createdById: user.id,
         status: TicketStatus.ABIERTO,
         createdFromIp: metadata.ipAddress,

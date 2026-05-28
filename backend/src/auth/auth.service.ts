@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { UserRole, UserStatus } from '@prisma/client';
+import { Prisma, UserRole, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { RequestMetadata, requestMetadata } from '../common/utils/request.utils';
@@ -15,6 +15,7 @@ import { AuthUser } from '../common/interfaces/auth-user.interface';
 import { FirstAccessDto } from './dto/first-access.dto';
 import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { PasswordResetRequestDto } from './dto/password-reset-request.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { Request } from 'express';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
@@ -230,6 +231,81 @@ export class AuthService {
       user: updated,
       mustChangePassword: user.mustChangePassword,
       ipAlert: alert,
+    };
+  }
+
+  async passwordResetRequest(dto: PasswordResetRequestDto, request: Request) {
+    const metadata = requestMetadata(request);
+    const identifier = dto.identifier.trim();
+    const email = dto.email?.trim().toLowerCase();
+    const phone = dto.phone?.trim();
+    const notes = dto.notes?.trim();
+
+    if (!email && !phone) {
+      throw new BadRequestException('Ingresa al menos el correo o el numero de celular registrado.');
+    }
+
+    const resetRequestSearch: Prisma.UserWhereInput[] = [
+      { username: identifier.toLowerCase() },
+      { fullName: { equals: identifier, mode: 'insensitive' } },
+    ];
+    if (email) resetRequestSearch.push({ email: { equals: email, mode: 'insensitive' } });
+    if (phone) resetRequestSearch.push({ phone });
+
+    const matchedUser = await this.prisma.user.findFirst({
+      where: { OR: resetRequestSearch },
+      select: {
+        id: true,
+        fullName: true,
+        username: true,
+        email: true,
+        phone: true,
+        status: true,
+        isActive: true,
+      },
+    });
+
+    const administrators = await this.prisma.user.findMany({
+      where: { role: UserRole.SUPERADMIN, isActive: true },
+      select: { id: true },
+    });
+
+    const matchText = matchedUser
+      ? `Coincidencia: ${matchedUser.fullName} (@${matchedUser.username}), estado ${matchedUser.status}, activo ${matchedUser.isActive ? 'si' : 'no'}.`
+      : 'Sin coincidencia exacta automatica.';
+    const message = [
+      `Datos enviados: ${identifier}.`,
+      email ? `Correo: ${email}.` : undefined,
+      phone ? `Celular: ${phone}.` : undefined,
+      `IP: ${metadata.ipAddress}.`,
+      matchText,
+      notes ? `Nota: ${notes}.` : undefined,
+      'Revisar Usuarios y restablecer la contrasena si corresponde.',
+    ].filter(Boolean).join(' ');
+
+    if (administrators.length) {
+      await this.prisma.notification.createMany({
+        data: administrators.map((admin) => ({
+          userId: admin.id,
+          title: 'Solicitud de restablecimiento de contrasena',
+          message,
+        })),
+      });
+      this.realtime.adminNotificationsUpdated();
+    }
+
+    await this.accessLog(
+      matchedUser?.id,
+      'PASSWORD_RESET_REQUEST',
+      metadata,
+      true,
+      matchedUser ? 'Solicitud vinculada a usuario existente.' : 'Solicitud sin coincidencia exacta.',
+      identifier,
+    );
+
+    return {
+      requestSent: true,
+      message: 'Tu solicitud fue enviada al Equipo de Sistemas. Te contactaran para restablecer tu contrasena.',
     };
   }
 

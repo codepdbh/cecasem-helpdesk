@@ -9,6 +9,7 @@ import { UsersPage } from './pages/admin/UsersPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { ForgotPasswordPage } from './pages/public/ForgotPasswordPage';
 import { FirstAccessPage } from './pages/public/FirstAccessPage';
 import { LandingPage } from './pages/public/LandingPage';
 import { LoginPage } from './pages/public/LoginPage';
@@ -23,6 +24,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/first-access" element={<FirstAccessPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/change-password" element={<ChangePasswordPage />} />
@@ -46,4 +48,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-

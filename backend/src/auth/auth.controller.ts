@@ -17,6 +17,7 @@ import { AuthService } from './auth.service';
 import { FirstAccessDto } from './dto/first-access.dto';
 import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { PasswordResetRequestDto } from './dto/password-reset-request.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { uploadOptions } from '../common/utils/file-upload.utils';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -49,6 +50,12 @@ export class AuthController {
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   login(@Body() dto: LoginDto, @Req() request: Request) {
     return this.auth.login(dto, request);
+  }
+
+  @Post('password-reset-request')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  passwordResetRequest(@Body() dto: PasswordResetRequestDto, @Req() request: Request) {
+    return this.auth.passwordResetRequest(dto, request);
   }
 
   @ApiBearerAuth()

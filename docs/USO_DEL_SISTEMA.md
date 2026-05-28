@@ -8,7 +8,7 @@ La portada ofrece **Iniciar sesión** y **Primer ingreso**. Todo usuario se aute
 
 1. Registre el primer ingreso y espere aprobación cuando esté habilitada.
 2. Abra **Nuevo ticket**.
-3. Indique categoría, prioridad y justificación, motivo, propósito y descripción.
+3. Indique categoría, prioridad, justificación y descripción.
 4. Adjunte evidencia opcional.
 5. Consulte respuestas y estado desde **Tickets**.
 6. Cuando el ticket sea asignado, el detalle muestra **Usted está siendo atendido por** junto al nombre del integrante del Equipo de Sistemas.

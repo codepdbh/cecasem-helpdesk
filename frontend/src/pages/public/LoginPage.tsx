@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { errorMessage } from '../../lib/api';
-import { Alert, Button, Field, Input } from '../../components/ui';
+import { Alert, Button, Field, Input, PasswordInput } from '../../components/ui';
 import { BrandLogo } from '../../components/BrandLogo';
 
 export function LoginPage() {
@@ -35,9 +35,12 @@ export function LoginPage() {
           <Input value={identifier} onChange={(event) => setIdentifier(event.target.value)} autoComplete="username" required />
         </Field>
         <Field label="Contraseña" required>
-          <Input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required />
+          <PasswordInput value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required />
         </Field>
         <Button className="w-full" disabled={loading}>{loading ? 'Ingresando...' : 'Ingresar'}</Button>
+        <p className="text-center text-sm">
+          <Link to="/forgot-password" className="font-semibold text-cecasem-blue">¿Olvidaste tu contraseña?</Link>
+        </p>
         <p className="text-center text-sm text-slate-500">
           ¿Es tu primera vez? <Link to="/first-access" className="font-semibold text-cecasem-blue">Primer ingreso</Link>
         </p>

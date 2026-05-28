@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../auth/AuthContext';
-import { Alert, Avatar, Button, Field, Input, PageTitle, formatDate, roleLabel } from '../components/ui';
+import { Alert, Avatar, Button, Field, Input, PageTitle, PasswordInput, formatDate, roleLabel } from '../components/ui';
 import { api, errorMessage } from '../lib/api';
 
 export function ProfilePage() {
@@ -72,9 +72,9 @@ export function ProfilePage() {
           <form className="panel space-y-4" onSubmit={changePassword}>
             <h2 className="font-semibold text-cecasem-navy">Cambiar contraseña</h2>
             <div className="grid gap-4 md:grid-cols-3">
-              <Field label="Actual" required><Input type="password" value={password.currentPassword} onChange={(event) => setPassword({ ...password, currentPassword: event.target.value })} required /></Field>
-              <Field label="Nueva" required><Input type="password" value={password.newPassword} onChange={(event) => setPassword({ ...password, newPassword: event.target.value })} required /></Field>
-              <Field label="Confirmar" required><Input type="password" value={password.confirmPassword} onChange={(event) => setPassword({ ...password, confirmPassword: event.target.value })} required /></Field>
+              <Field label="Actual" required><PasswordInput value={password.currentPassword} onChange={(event) => setPassword({ ...password, currentPassword: event.target.value })} autoComplete="current-password" required /></Field>
+              <Field label="Nueva" required><PasswordInput value={password.newPassword} onChange={(event) => setPassword({ ...password, newPassword: event.target.value })} autoComplete="new-password" required /></Field>
+              <Field label="Confirmar" required><PasswordInput value={password.confirmPassword} onChange={(event) => setPassword({ ...password, confirmPassword: event.target.value })} autoComplete="new-password" required /></Field>
             </div>
             <Button>Actualizar contraseña</Button>
           </form>
@@ -83,4 +83,3 @@ export function ProfilePage() {
     </>
   );
 }
-
