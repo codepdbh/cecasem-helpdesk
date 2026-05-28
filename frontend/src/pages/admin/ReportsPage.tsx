@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Alert, Avatar, Badge, Button, Empty, Field, Input, PageTitle, Select, formatDate } from '../../components/ui';
+import { Alert, Avatar, Badge, Button, Empty, Field, Input, PageTitle, Select, formatDate, priorityLabel, ticketPriorityOptions, ticketStatusLabel, ticketStatusOptions } from '../../components/ui';
 import { api, dataOf, downloadFile, errorMessage } from '../../lib/api';
 import type { Category, Paged, Ticket, User } from '../../types';
 
@@ -52,8 +52,8 @@ export function ReportsPage() {
         <div className="grid gap-4 md:grid-cols-4">
           <Field label="Fecha desde"><Input type="date" value={filters.dateFrom} onChange={(event) => setFilters({ ...filters, dateFrom: event.target.value })} /></Field>
           <Field label="Fecha hasta"><Input type="date" value={filters.dateTo} onChange={(event) => setFilters({ ...filters, dateTo: event.target.value })} /></Field>
-          <Field label="Estado"><Select value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}><option value="">Todos</option>{['ABIERTO', 'EN_PROCESO', 'ESPERANDO_USUARIO', 'RESUELTO', 'CERRADO', 'REABIERTO', 'CANCELADO'].map((value) => <option key={value}>{value}</option>)}</Select></Field>
-          <Field label="Prioridad"><Select value={filters.priority} onChange={(event) => setFilters({ ...filters, priority: event.target.value })}><option value="">Todas</option>{['BAJA', 'MEDIA', 'ALTA', 'CRITICA'].map((value) => <option key={value}>{value}</option>)}</Select></Field>
+          <Field label="Estado"><Select value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}><option value="">Todos</option>{ticketStatusOptions.map((value) => <option key={value} value={value}>{ticketStatusLabel(value)}</option>)}</Select></Field>
+          <Field label="Prioridad"><Select value={filters.priority} onChange={(event) => setFilters({ ...filters, priority: event.target.value })}><option value="">Todas</option>{ticketPriorityOptions.map((value) => <option key={value} value={value}>{priorityLabel(value)}</option>)}</Select></Field>
           <Field label="Categoría"><Select value={filters.categoryId} onChange={(event) => setFilters({ ...filters, categoryId: event.target.value })}><option value="">Todas</option>{categories.map((category) => <option value={category.id} key={category.id}>{category.name}</option>)}</Select></Field>
           <Field label="Usuario"><Select value={filters.userId} onChange={(event) => setFilters({ ...filters, userId: event.target.value })}><option value="">Todos</option>{users.map((member) => <option key={member.id} value={member.id}>{member.fullName}</option>)}</Select></Field>
           <Field label="Tiene foto de constancia"><Select value={filters.hasConstancyPhoto} onChange={(event) => setFilters({ ...filters, hasConstancyPhoto: event.target.value })}><option value="">Todos</option><option value="true">Sí</option><option value="false">No</option></Select></Field>
@@ -94,4 +94,3 @@ export function ReportsPage() {
 function Check({ label, checked, change }: { label: string; checked: boolean; change: (checked: boolean) => void }) {
   return <label className="flex items-center gap-2"><input type="checkbox" checked={checked} onChange={(event) => change(event.target.checked)} className="h-4 w-4 accent-cecasem-blue" />{label}</label>;
 }
-

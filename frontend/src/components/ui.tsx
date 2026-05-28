@@ -89,26 +89,76 @@ export function roleLabel(role: Role): string {
   return role === 'SUPERADMIN' ? 'Equipo de Sistemas' : 'Usuario';
 }
 
-export function Badge({ value }: { value: TicketStatus | Priority | UserStatus | Role }) {
-  const labels: Record<string, string> = {
-    ABIERTO: 'Abierto',
-    EN_PROCESO: 'En proceso',
-    ESPERANDO_USUARIO: 'Esperando respuesta del usuario',
-    RESUELTO: 'Resuelto',
-    CERRADO: 'Cerrado',
-    REABIERTO: 'Reabierto',
-    CANCELADO: 'Cancelado',
-    BAJA: 'Baja',
-    MEDIA: 'Media',
-    ALTA: 'Alta',
-    CRITICA: 'Crítica',
-    PENDING: 'Pendiente de aprobación',
-    ACTIVE: 'Activo',
-    REJECTED: 'Rechazado',
-    DISABLED: 'Desactivado',
-    USER: 'Usuario',
-    SUPERADMIN: 'Equipo de Sistemas',
+export const ticketStatusOptions: TicketStatus[] = ['ABIERTO', 'EN_PROCESO', 'ESPERANDO_USUARIO', 'RESUELTO', 'CERRADO', 'REABIERTO', 'CANCELADO'];
+export const ticketPriorityOptions: Priority[] = ['BAJA', 'MEDIA', 'ALTA', 'CRITICA'];
+
+const labels: Record<string, string> = {
+  ABIERTO: 'Abierto',
+  EN_PROCESO: 'En proceso',
+  ESPERANDO_USUARIO: 'Esperando respuesta del usuario',
+  RESUELTO: 'Resuelto',
+  CERRADO: 'Cerrado',
+  REABIERTO: 'Reabierto',
+  CANCELADO: 'Cancelado',
+  BAJA: 'Baja',
+  MEDIA: 'Media',
+  ALTA: 'Alta',
+  CRITICA: 'Crítica',
+  PENDING: 'Pendiente de aprobación',
+  ACTIVE: 'Activo',
+  REJECTED: 'Rechazado',
+  DISABLED: 'Desactivado',
+  USER: 'Usuario',
+  SUPERADMIN: 'Equipo de Sistemas',
+};
+
+export function ticketStatusLabel(value: TicketStatus | string): string {
+  return labels[value] || humanizeCode(value);
+}
+
+export function priorityLabel(value: Priority | string): string {
+  return labels[value] || humanizeCode(value);
+}
+
+export function auditActionLabel(action: string): string {
+  const actions: Record<string, string> = {
+    ASSIGNED: 'Responsable asignado',
+    ATTACHMENT_ADDED: 'Archivo adjunto agregado',
+    CHANGE_PASSWORD: 'Contraseña cambiada',
+    CLOSE_TICKET: 'Ticket cerrado',
+    COMMENT_ADDED: 'Comentario agregado',
+    COMMENT_TICKET: 'Comentario en ticket',
+    CONSTANCY_PHOTO_ADDED: 'Foto de constancia agregada',
+    CREATE_TICKET: 'Ticket creado',
+    FIRST_ACCESS_REGISTER: 'Primer ingreso registrado',
+    FIRST_ACCESS_REGISTER_FAILED: 'Primer ingreso fallido',
+    FIRST_ACCESS_REGISTER_SUCCESS: 'Primer ingreso exitoso',
+    LOGIN_FAILED: 'Inicio de sesión fallido',
+    LOGIN_SUCCESS: 'Inicio de sesión exitoso',
+    LOGOUT: 'Cierre de sesión',
+    PASSWORD_CHANGED: 'Contraseña restablecida',
+    PASSWORD_RESET_REQUEST: 'Solicitud de restablecimiento',
+    PRIORITY_CHANGED: 'Prioridad cambiada',
+    REOPEN_TICKET: 'Ticket reabierto',
+    STATUS_CHANGED: 'Estado cambiado',
+    TICKET_CANCELLED: 'Ticket cancelado',
+    TICKET_CLOSED: 'Ticket cerrado',
+    TICKET_CREATED: 'Ticket creado',
+    TICKET_REOPENED: 'Ticket reabierto',
+    TICKET_RESOLVED: 'Ticket resuelto',
+    TICKET_UPDATED: 'Ticket actualizado',
+    UPDATE_PROFILE: 'Perfil actualizado',
+    USER_ACTIVATED: 'Usuario activado',
+    USER_APPROVED: 'Usuario aprobado',
+    USER_CREATED: 'Usuario creado',
+    USER_DISABLED: 'Usuario desactivado',
+    USER_REJECTED: 'Usuario rechazado',
+    USER_UPDATED: 'Usuario actualizado',
   };
+  return actions[action] || humanizeCode(action);
+}
+
+export function Badge({ value }: { value: TicketStatus | Priority | UserStatus | Role }) {
   const colors: Record<string, string> = {
     ABIERTO: 'bg-sky-100 text-sky-700',
     EN_PROCESO: 'bg-amber-100 text-amber-800',
@@ -128,7 +178,7 @@ export function Badge({ value }: { value: TicketStatus | Priority | UserStatus |
     SUPERADMIN: 'bg-cecasem-mist text-cecasem-blue',
     USER: 'bg-slate-100 text-slate-700',
   };
-  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${colors[value]}`}>{labels[value]}</span>;
+  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${colors[value]}`}>{labels[value] || humanizeCode(value)}</span>;
 }
 
 export function PageTitle({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
@@ -158,4 +208,9 @@ export function Empty({ text }: { text: string }) {
 
 export function formatDate(value?: string): string {
   return value ? new Date(value).toLocaleString('es-BO') : 'Sin registro';
+}
+
+function humanizeCode(value: string): string {
+  const text = value.replaceAll('_', ' ').toLowerCase();
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }

@@ -1,11 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Camera, CheckCircle2, ChevronDown, Download, Paperclip, Send, UserRound, XCircle } from 'lucide-react';
+import { Camera, CheckCircle2, ChevronDown, Download, Eye, Paperclip, Send, UserRound, X, XCircle } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { Alert, Avatar, Badge, Button, Empty, Field, Input, PageTitle, Select, Textarea, formatDate, roleLabel } from '../../components/ui';
+import { Alert, Avatar, Badge, Button, Empty, Field, Input, PageTitle, Select, Textarea, auditActionLabel, formatDate, roleLabel, ticketStatusLabel } from '../../components/ui';
 import { api, dataOf, downloadFile, errorMessage, fileUrl } from '../../lib/api';
 import { liveConnection } from '../../lib/live';
-import type { Paged, Ticket, User } from '../../types';
+import type { Paged, Ticket, TicketAttachment, User, TicketStatus } from '../../types';
 
 export function TicketDetailPage() {
   const { id = '' } = useParams();
@@ -24,6 +24,7 @@ export function TicketDetailPage() {
   const [showConstancyForm, setShowConstancyForm] = useState(false);
   const [showCloseForm, setShowCloseForm] = useState(false);
   const [showMoreActions, setShowMoreActions] = useState(false);
+  const [imagePreview, setImagePreview] = useState<{ src: string; name: string }>();
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
@@ -160,6 +161,7 @@ export function TicketDetailPage() {
   const finalized = ticket.status === 'CERRADO' || ticket.status === 'CANCELADO';
   const resolved = ticket.status === 'RESUELTO';
   const attendedLabel = ticket.status === 'CERRADO' ? 'Su solicitud fue atendida por:' : 'Usted está siendo atendido por:';
+  const changeableStatuses: TicketStatus[] = ['ABIERTO', 'EN_PROCESO', 'ESPERANDO_USUARIO', 'REABIERTO'];
 
   return (
     <>
@@ -208,9 +210,7 @@ export function TicketDetailPage() {
               <Button variant="secondary" type="button" onClick={addAttachment} disabled={!attachment}><Paperclip size={15} className="mr-1 inline" />Adjuntar</Button>
             </div>
             {!ticket.attachments.length ? <Empty text="Sin archivos adjuntos." /> : ticket.attachments.map((item) => (
-              <button key={item.id} onClick={() => downloadFile(`/attachments/${item.id}/download`, item.originalName)} className="mb-2 flex w-full items-center justify-between rounded-xl bg-slate-50 p-3 text-sm hover:bg-slate-100">
-                {item.originalName}<Download size={16} />
-              </button>
+              <AttachmentRow key={item.id} item={item} onPreview={setImagePreview} />
             ))}
           </section>
 
@@ -241,7 +241,13 @@ export function TicketDetailPage() {
             <h2 className="mb-4 font-semibold text-cecasem-navy">Fotos de constancia</h2>
             {ticket.constancyPhotos.map((photo) => (
               <div key={photo.id} className="mb-4 overflow-hidden rounded-xl border border-slate-100">
-                <img src={fileUrl(photo.filePath)} alt={photo.originalName} className="h-36 w-full object-cover" />
+                <button
+                  type="button"
+                  className="block w-full"
+                  onClick={() => setImagePreview({ src: fileUrl(photo.filePath) || '', name: photo.originalName })}
+                >
+                  <img src={fileUrl(photo.filePath)} alt={photo.originalName} className="h-36 w-full object-cover transition hover:opacity-90" />
+                </button>
                 <div className="p-3 text-xs text-slate-500">{photo.description || 'Evidencia de atención'}<br />{formatDate(photo.createdAt)}{admin && <><br />IP: {photo.uploadedFromIp}</>}</div>
               </div>
             ))}
@@ -318,7 +324,9 @@ export function TicketDetailPage() {
                   <div className="flex gap-2">
                     <Select value={status} onChange={(event) => setStatus(event.target.value)}>
                       <option value="">Cambiar estado...</option>
-                      {['ABIERTO', 'EN_PROCESO', 'ESPERANDO_USUARIO', 'REABIERTO'].filter((item) => item !== ticket.status).map((item) => <option key={item}>{item}</option>)}
+                      {changeableStatuses.filter((item) => item !== ticket.status).map((item) => (
+                        <option key={item} value={item}>{ticketStatusLabel(item)}</option>
+                      ))}
                     </Select>
                     <Button type="button" onClick={changeStatus} disabled={!status}>Aplicar</Button>
                   </div>
@@ -341,7 +349,7 @@ export function TicketDetailPage() {
               <h2 className="mb-4 font-semibold text-cecasem-navy">Historial</h2>
               {!ticket.logs.length ? <Empty text="Sin acciones registradas." /> : ticket.logs.map((log) => (
                 <div key={log.id} className="border-l-2 border-cecasem-mist pb-4 pl-3 text-xs">
-                  <p className="font-semibold text-slate-700">{log.action.replaceAll('_', ' ')}</p>
+                  <p className="font-semibold text-slate-700">{auditActionLabel(log.action)}</p>
                   <p className="text-slate-500">{formatDate(log.createdAt)} {log.user?.fullName && `· ${log.user.fullName}`}</p>
                   {log.ipAddress && <p className="text-slate-400">IP: {log.ipAddress}</p>}
                 </div>
@@ -350,10 +358,67 @@ export function TicketDetailPage() {
           )}
         </aside>
       </div>
+      {imagePreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4" onClick={() => setImagePreview(undefined)}>
+          <section className="flex max-h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl" onClick={(event) => event.stopPropagation()}>
+            <header className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+              <h2 className="min-w-0 truncate text-sm font-semibold text-cecasem-navy">{imagePreview.name}</h2>
+              <button
+                type="button"
+                aria-label="Cerrar visor"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-cecasem-blue"
+                onClick={() => setImagePreview(undefined)}
+              >
+                <X size={18} />
+              </button>
+            </header>
+            <div className="flex min-h-0 flex-1 items-center justify-center bg-slate-950 p-3">
+              <img src={imagePreview.src} alt={imagePreview.name} className="max-h-[78dvh] max-w-full object-contain" />
+            </div>
+          </section>
+        </div>
+      )}
     </>
   );
 }
 
 function Detail({ label, text }: { label: string; text: string }) {
   return <div className="mb-5"><p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p><p className="whitespace-pre-wrap text-sm">{text}</p></div>;
+}
+
+function AttachmentRow({ item, onPreview }: { item: TicketAttachment; onPreview: (preview: { src: string; name: string }) => void }) {
+  const canPreview = isImageAttachment(item);
+
+  return (
+    <div className="mb-2 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-3 text-sm">
+      <div className="min-w-0">
+        <p className="truncate font-medium text-cecasem-navy" title={item.originalName}>{canPreview ? 'Imagen adjunta' : item.originalName}</p>
+        <p className="truncate text-xs text-slate-500">{canPreview ? item.originalName : 'Archivo adjunto'}</p>
+      </div>
+      <div className="flex shrink-0 gap-2">
+        {canPreview && (
+          <Button
+            type="button"
+            variant="ghost"
+            className="px-3 py-2"
+            onClick={() => onPreview({ src: fileUrl(item.filePath) || '', name: item.originalName })}
+          >
+            <Eye size={15} className="mr-1 inline" />Ver
+          </Button>
+        )}
+        <Button
+          type="button"
+          variant="ghost"
+          className="px-3 py-2"
+          onClick={() => downloadFile(`/attachments/${item.id}/download`, item.originalName)}
+        >
+          <Download size={15} className="mr-1 inline" />Descargar
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function isImageAttachment(item: TicketAttachment): boolean {
+  return Boolean(item.mimeType?.startsWith('image/')) || /\.(jpe?g|png|webp)$/i.test(item.originalName);
 }

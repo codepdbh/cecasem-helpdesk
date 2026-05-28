@@ -45,6 +45,8 @@ export interface TicketAttachment {
   id: string;
   originalName: string;
   filePath: string;
+  mimeType?: string;
+  sizeBytes?: number;
   createdAt: string;
 }
 

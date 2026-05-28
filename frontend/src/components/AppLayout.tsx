@@ -115,7 +115,7 @@ export function AppLayout() {
 
   if (!user) return null;
   const nav = [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/dashboard', label: 'Panel', icon: LayoutDashboard },
     { to: '/tickets', label: 'Tickets', icon: ClipboardList },
     { to: '/profile', label: 'Mi perfil', icon: Settings },
     ...(user.role === 'SUPERADMIN'

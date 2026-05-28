@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AuthUser } from '../common/interfaces/auth-user.interface';
 import { requestMetadata } from '../common/utils/request.utils';
 import { storedFileData } from '../common/utils/file-upload.utils';
+import { ticketStatusLabel } from '../common/utils/labels.utils';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { TicketQueryDto } from './dto/ticket-query.dto';
@@ -222,7 +223,7 @@ export class TicketsService {
       data: { ticketId: id, userId: user.id, action: 'STATUS_CHANGED', previousValue: previous.status, newValue: dto.status, ...metadata },
     });
     await this.prisma.notification.create({
-      data: { userId: previous.createdById, ticketId: id, title: 'Estado actualizado', message: `${previous.code} ahora esta ${dto.status.replaceAll('_', ' ').toLowerCase()}.` },
+      data: { userId: previous.createdById, ticketId: id, title: 'Estado actualizado', message: `${previous.code} ahora está ${ticketStatusLabel(dto.status).toLowerCase()}.` },
     });
     this.realtime.notificationUpdated([previous.createdById]);
     this.realtime.ticketUpdated(id, previous.createdById);

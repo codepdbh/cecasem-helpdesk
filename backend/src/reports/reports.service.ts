@@ -5,6 +5,7 @@ import PDFDocument from 'pdfkit';
 import { existsSync } from 'fs';
 import { PrismaService } from '../prisma/prisma.service';
 import { physicalFilePath } from '../common/utils/file-upload.utils';
+import { auditActionLabel, ticketPriorityLabel, ticketStatusLabel } from '../common/utils/labels.utils';
 import { ReportQueryDto } from './dto/report-query.dto';
 
 @Injectable()
@@ -141,8 +142,8 @@ export class ReportsService {
     const records = await this.tickets(query);
     const quote = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
     const header = [
-      'Codigo', 'Titulo', 'Usuario', 'Nombre', 'Apellido', 'Categoria', 'Prioridad', 'Estado',
-      'Fecha creacion', 'Fecha cierre', 'IP creacion', 'IP primer ingreso', 'Tiene constancia', 'Rutas constancia',
+      'Código', 'Título', 'Usuario', 'Nombre', 'Apellido', 'Categoría', 'Prioridad', 'Estado',
+      'Fecha de creación', 'Fecha de cierre', 'IP de creación', 'IP de primer ingreso', 'Tiene constancia', 'Rutas de constancia',
     ];
     const lines = records.map((ticket) => [
       ticket.code,
@@ -151,8 +152,8 @@ export class ReportsService {
       ticket.createdBy.firstName,
       ticket.createdBy.lastName,
       ticket.category.name,
-      ticket.priority,
-      ticket.status,
+      ticketPriorityLabel(ticket.priority),
+      ticketStatusLabel(ticket.status),
       ticket.createdAt.toISOString(),
       ticket.closedAt?.toISOString() || '',
       query.includeCreationIp ? ticket.createdFromIp : '',
@@ -180,7 +181,7 @@ export class ReportsService {
       if (document.y > 700) document.addPage();
       document.fontSize(11).fillColor('#123653').text(`${ticket.code} | ${ticket.title}`);
       document.fontSize(9).fillColor('#273747').text(
-        `${ticket.createdBy.fullName} | ${ticket.category.name} | ${ticket.priority} | ${ticket.status} | ${ticket.createdAt.toLocaleDateString('es-BO')}`,
+        `${ticket.createdBy.fullName} | ${ticket.category.name} | ${ticketPriorityLabel(ticket.priority)} | ${ticketStatusLabel(ticket.status)} | ${ticket.createdAt.toLocaleDateString('es-BO')}`,
       );
       if (query.includeCreationIp) document.text(`IP de creacion: ${ticket.createdFromIp} | IP inicial: ${ticket.createdBy.firstAccessIp || 'No registrada'}`);
       if (query.includeProfilePhotos && ticket.createdBy.profilePhotoPath) {
@@ -198,7 +199,7 @@ export class ReportsService {
         }
       }
       if (query.includeActions) {
-        document.text(`Acciones registradas: ${ticket.logs.map((log) => log.action).join(', ') || 'Sin acciones'}`);
+        document.text(`Acciones registradas: ${ticket.logs.map((log) => auditActionLabel(log.action)).join(', ') || 'Sin acciones'}`);
       }
       document.moveDown().strokeColor('#dde6ed').moveTo(38, document.y).lineTo(557, document.y).stroke().moveDown();
     }

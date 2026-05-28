@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { AlertCircle, Camera, CheckCircle, Clock3, FolderOpen, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { Avatar, Badge, Empty, PageTitle, formatDate } from '../components/ui';
+import { Avatar, Badge, Empty, PageTitle, auditActionLabel, formatDate, priorityLabel, ticketStatusLabel } from '../components/ui';
 import { api, dataOf } from '../lib/api';
 import { liveConnection } from '../lib/live';
 import type { Paged, Summary, Ticket, User } from '../types';
@@ -52,7 +52,7 @@ export function DashboardPage() {
   };
   const cards = user?.role === 'SUPERADMIN' && summary
     ? [
-        { label: 'Total tickets', value: summary.totalTickets, icon: FolderOpen },
+        { label: 'Total de tickets', value: summary.totalTickets, icon: FolderOpen },
         { label: 'Abiertos', value: summary.openTickets, icon: AlertCircle },
         { label: 'En proceso', value: summary.processingTickets, icon: Clock3 },
         { label: 'Críticos', value: summary.criticalTickets, icon: AlertCircle },
@@ -84,8 +84,8 @@ export function DashboardPage() {
       </div>
       {summary && (
         <div className="mb-7 grid gap-5 lg:grid-cols-2">
-          <Chart title="Tickets por estado" items={summary.byStatus.map((item) => ({ label: item.status.replaceAll('_', ' '), value: item._count }))} />
-          <Chart title="Tickets por prioridad" items={summary.byPriority.map((item) => ({ label: item.priority, value: item._count }))} />
+          <Chart title="Tickets por estado" items={summary.byStatus.map((item) => ({ label: ticketStatusLabel(item.status), value: item._count }))} />
+          <Chart title="Tickets por prioridad" items={summary.byPriority.map((item) => ({ label: priorityLabel(item.priority), value: item._count }))} />
         </div>
       )}
       {user?.role === 'SUPERADMIN' && (
@@ -104,7 +104,7 @@ export function DashboardPage() {
             <h2 className="mb-4 font-semibold text-cecasem-navy">Accesos recientes</h2>
             {!access.length ? <Empty text="Sin accesos registrados." /> : access.map((item) => (
               <div key={item.id} className="mb-3 flex justify-between rounded-xl bg-slate-50 p-3 text-xs">
-                <div><p className="font-semibold">{item.user?.fullName || 'No identificado'}</p><p className="text-slate-500">{item.action.replaceAll('_', ' ')} · {item.ipAddress}</p></div>
+                <div><p className="font-semibold">{item.user?.fullName || 'No identificado'}</p><p className="text-slate-500">{auditActionLabel(item.action)} · {item.ipAddress}</p></div>
                 <span className="text-slate-400">{formatDate(item.createdAt)}</span>
               </div>
             ))}
